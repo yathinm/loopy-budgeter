@@ -1,14 +1,14 @@
 import type {
+  BuiltInCategoryId,
   BudgetCategory,
   BudgetPreset,
-  CategoryId,
   PaycheckBudget,
 } from '@/types/budget';
 
 export const BASIS_POINTS_TOTAL = 10_000;
 
 export const categoryConfig: Record<
-  CategoryId,
+  BuiltInCategoryId,
   {
     name: string;
     shortName: string;
@@ -44,7 +44,7 @@ export const categoryConfig: Record<
 
 export const presetBasisPoints: Record<
   Exclude<BudgetPreset, 'custom'>,
-  Record<CategoryId, number>
+  Record<BuiltInCategoryId, number>
 > = {
   balanced: {
     savings: 3000,
@@ -132,7 +132,7 @@ export function allocatePreset(
   preset: Exclude<BudgetPreset, 'custom'>,
 ): BudgetCategory[] {
   const entries = Object.entries(presetBasisPoints[preset]) as [
-    CategoryId,
+    BuiltInCategoryId,
     number,
   ][];
   const raw = entries.map(([id, basisPoints]) => ({

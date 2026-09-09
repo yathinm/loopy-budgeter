@@ -4,7 +4,8 @@ export const categoryIds = [
   'eating',
   'shopping',
 ] as const;
-export type CategoryId = (typeof categoryIds)[number];
+export type BuiltInCategoryId = (typeof categoryIds)[number];
+export type CategoryId = string;
 
 export type PayFrequency =
   | 'weekly'
@@ -20,6 +21,8 @@ export type BudgetPreset =
 
 export type BudgetCategory = {
   id: CategoryId;
+  name?: string;
+  color?: string;
   amountCents: number;
   locked: boolean;
 };

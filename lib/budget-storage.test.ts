@@ -18,6 +18,21 @@ describe('budget storage', () => {
     saveBudgetData(data);
     expect(loadBudgetData()).toEqual(data);
   });
+  it('round trips user-created categories', () => {
+    const budget = createBudget(12345, 'monthly', 'custom');
+    budget.categories.push({
+      id: 'custom-rent',
+      name: 'Rent',
+      color: '#8f5d78',
+      amountCents: 0,
+      locked: false,
+    });
+    const data = upsertBudget(emptyStoredData, budget);
+    saveBudgetData(data);
+    expect(loadBudgetData().budgets[0].categories.at(-1)).toEqual(
+      budget.categories.at(-1),
+    );
+  });
   it('returns defaults for corrupt data', () => {
     localStorage.setItem('pocket-plan:data', '{broken');
     expect(loadBudgetData()).toEqual(emptyStoredData);

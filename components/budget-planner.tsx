@@ -6,8 +6,6 @@ import {
   Check,
   Copy,
   CreditCard,
-  Lock,
-  LockOpen,
   Pencil,
   PiggyBank,
   Plus,
@@ -66,6 +64,7 @@ import {
   upsertBudget,
 } from '@/lib/budget-storage';
 import type {
+  BuiltInCategoryId,
   BudgetCategory,
   BudgetPreset,
   CategoryId,
@@ -90,12 +89,28 @@ const setupSchema = z.object({
 });
 type SetupValues = z.infer<typeof setupSchema>;
 
-const icons: Record<CategoryId, typeof PiggyBank> = {
+const icons: Record<BuiltInCategoryId, typeof PiggyBank> = {
   savings: PiggyBank,
   'credit-card': CreditCard,
   eating: Utensils,
   shopping: ShoppingBag,
 };
+const customColors = ['#8f5d78', '#5f7896', '#6f8b74', '#b47b52'];
+
+function getCategoryConfig(category: BudgetCategory) {
+  const builtIn =
+    category.id in categoryConfig
+      ? categoryConfig[category.id as BuiltInCategoryId]
+      : undefined;
+  return (
+    builtIn ?? {
+      name: category.name ?? 'Custom category',
+      shortName: category.name ?? 'Custom',
+      description: '',
+      color: category.color ?? customColors[0],
+    }
+  );
+}
 const frequencies: { value: PayFrequency; label: string }[] = [
   { value: 'weekly', label: 'Weekly' },
   { value: 'biweekly', label: 'Every two weeks' },
@@ -114,15 +129,20 @@ function AllocationCard({
   budget,
   category,
   onChange,
-  onToggleLock,
+  onDelete,
+  canDelete,
 }: {
   budget: PaycheckBudget;
   category: BudgetCategory;
   onChange: (amount: number) => void;
-  onToggleLock: () => void;
+  onDelete: () => void;
+  canDelete: boolean;
 }) {
-  const config = categoryConfig[category.id];
-  const Icon = icons[category.id];
+  const config = getCategoryConfig(category);
+  const Icon =
+    category.id in icons
+      ? icons[category.id as BuiltInCategoryId]
+      : WalletCards;
   const basisPoints = percentageForAmount(
     category.amountCents,
     budget.paycheckCents,
@@ -148,12 +168,12 @@ function AllocationCard({
           type="button"
           variant="ghost"
           size="icon"
-          onClick={onToggleLock}
-          aria-label={`${category.locked ? 'Unlock' : 'Lock'} ${config.name}`}
-          aria-pressed={category.locked}
-          className="rounded-full text-plum/55"
+          onClick={onDelete}
+          disabled={!canDelete}
+          aria-label={`Delete ${config.name}`}
+          className="rounded-full text-plum/55 hover:text-destructive"
         >
-          {category.locked ? <Lock /> : <LockOpen />}
+          <Trash2 />
         </Button>
       </div>
       <div className="mt-5 grid grid-cols-2 gap-3">
@@ -172,7 +192,6 @@ function AllocationCard({
               min="0"
               step="0.01"
               value={(category.amountCents / 100).toFixed(2)}
-              disabled={category.locked}
               onChange={(event) => {
                 const cents = parseCurrencyToCents(event.target.value);
                 if (cents !== null) onChange(cents);
@@ -195,7 +214,6 @@ function AllocationCard({
               max="100"
               step="0.01"
               value={formatPercentage(basisPoints)}
-              disabled={category.locked}
               onChange={(event) => {
                 const value = Number(event.target.value);
                 if (Number.isFinite(value) && value >= 0 && value <= 100)
@@ -222,7 +240,6 @@ function AllocationCard({
         max={100}
         step={1}
         value={[Math.min(100, basisPoints / 100)]}
-        disabled={category.locked}
         onValueChange={(values) => {
           const value = typeof values === 'number' ? values : values[0];
           onChange(
@@ -240,10 +257,10 @@ function BudgetChart({ budget }: { budget: PaycheckBudget }) {
     .filter((item) => item.amountCents > 0)
     .map((item) => ({
       id: item.id,
-      name: categoryConfig[item.id].shortName,
+      name: getCategoryConfig(item).shortName,
       value: item.amountCents,
-      color: categoryConfig[item.id].color,
-      fill: categoryConfig[item.id].color,
+      color: getCategoryConfig(item).color,
+      fill: getCategoryConfig(item).color,
     }));
   return (
     <figure
@@ -445,6 +462,8 @@ export function BudgetPlanner() {
   const [saveOpen, setSaveOpen] = useState(false);
   const [budgetName, setBudgetName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [addCategoryOpen, setAddCategoryOpen] = useState(false);
+  const [categoryName, setCategoryName] = useState('');
   const [notice, setNotice] = useState('');
   const form = useForm<SetupValues>({
     resolver: zodResolver(setupSchema),
@@ -546,7 +565,7 @@ export function BudgetPlanner() {
     () =>
       budget.categories.map((item) => ({
         ...item,
-        config: categoryConfig[item.id],
+        config: getCategoryConfig(item),
       })),
     [budget.categories],
   );
@@ -592,6 +611,28 @@ export function BudgetPlanner() {
             updatedAt: new Date().toISOString(),
           };
     });
+  const addCategory = () => {
+    const name = categoryName.trim();
+    if (!name) return;
+    setBudget((current) => ({
+      ...current,
+      preset: 'custom',
+      categories: [
+        ...current.categories,
+        {
+          id: `custom-${crypto.randomUUID()}`,
+          name,
+          color: customColors[current.categories.length % customColors.length],
+          amountCents: 0,
+          locked: false,
+        },
+      ],
+      updatedAt: new Date().toISOString(),
+    }));
+    setCategoryName('');
+    setAddCategoryOpen(false);
+    setNotice(`${name} added.`);
+  };
   const saveCurrent = () => {
     const name = budgetName.trim();
     if (!name || !isBudgetSavable(budget)) return;
@@ -683,13 +724,13 @@ export function BudgetPlanner() {
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-8 text-ink/65">
             Split your take-home pay into a simple plan for saving, debt, food,
-            and a little fun.
+            and a little PLAY.
           </p>
         </div>
-        <div className="mt-10 grid items-start gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-10">
+        <div className="mt-10 grid items-stretch gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-10">
           <form
             onSubmit={form.handleSubmit(createFromForm)}
-            className="rounded-[28px] border border-plum/10 bg-white/78 p-5 shadow-[0_20px_60px_rgba(85,20,47,0.08)] sm:p-7 lg:sticky lg:top-5"
+            className="rounded-[28px] border border-plum/10 bg-white/78 p-5 shadow-[0_20px_60px_rgba(85,20,47,0.08)] sm:p-7 lg:flex lg:h-full lg:flex-col"
           >
             <label
               htmlFor="paycheck"
@@ -774,7 +815,7 @@ export function BudgetPlanner() {
                       <span className="mt-2 flex gap-1" aria-hidden="true">
                         {(
                           Object.entries(presetBasisPoints[option]) as [
-                            CategoryId,
+                            BuiltInCategoryId,
                             number,
                           ][]
                         ).map(([id, bps]) => (
@@ -793,9 +834,16 @@ export function BudgetPlanner() {
                 ))}
               </div>
             </fieldset>
+            <div className="hidden flex-1 items-center justify-center py-10 lg:flex">
+              <img
+                src="/loopy-mascot.png"
+                alt="Loopy mascot"
+                className="w-full max-w-72 object-contain"
+              />
+            </div>
             <Button
               type="submit"
-              className="mt-7 h-13 w-full rounded-full bg-plum text-base hover:bg-plum/90"
+              className="mt-7 h-13 w-full rounded-full bg-plum text-base hover:bg-plum/90 lg:mt-auto"
             >
               Create my budget
             </Button>
@@ -889,9 +937,7 @@ export function BudgetPlanner() {
               </div>
               {remaining > 0 && (
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {budget.categories
-                    .filter((item) => !item.locked)
-                    .map((item) => (
+                  {budget.categories.map((item) => (
                       <button
                         key={item.id}
                         type="button"
@@ -899,20 +945,30 @@ export function BudgetPlanner() {
                         className="rounded-full bg-white/15 px-3 py-2 text-sm font-semibold"
                       >
                         <Plus className="mr-1 inline size-3.5" />
-                        {categoryConfig[item.id].shortName}
+                        {getCategoryConfig(item).shortName}
                       </button>
                     ))}
                 </div>
               )}
             </section>
             <section>
-              <div className="mb-4">
-                <p className="text-sm font-semibold uppercase tracking-[0.1em] text-primary">
-                  Your categories
-                </p>
-                <h2 className="mt-1 text-2xl font-semibold text-plum">
-                  Fine-tune the split
-                </h2>
+              <div className="mb-4 flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.1em] text-primary">
+                    Your categories
+                  </p>
+                  <h2 className="mt-1 text-2xl font-semibold text-plum">
+                    Fine-tune the split
+                  </h2>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setAddCategoryOpen(true)}
+                  className="rounded-full border-plum/15 bg-white/70 text-plum"
+                >
+                  <Plus /> Add category
+                </Button>
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 {budget.categories.map((item) => (
@@ -921,14 +977,15 @@ export function BudgetPlanner() {
                     budget={budget}
                     category={item}
                     onChange={(amount) => changeCategory(item.id, amount)}
-                    onToggleLock={() =>
+                    canDelete={budget.categories.length > 1}
+                    onDelete={() =>
                       setBudget((current) => ({
                         ...current,
-                        categories: current.categories.map((category) =>
-                          category.id === item.id
-                            ? { ...category, locked: !category.locked }
-                            : category,
+                        preset: 'custom',
+                        categories: current.categories.filter(
+                          (category) => category.id !== item.id,
                         ),
+                        updatedAt: new Date().toISOString(),
                       }))
                     }
                   />
@@ -965,6 +1022,51 @@ export function BudgetPlanner() {
           </div>
         </div>
       </section>
+      <Dialog open={addCategoryOpen} onOpenChange={setAddCategoryOpen}>
+        <DialogContent className="rounded-[22px] p-6 sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-semibold text-plum">
+              Add a category
+            </DialogTitle>
+            <DialogDescription>
+              Create another place to assign part of your paycheck.
+            </DialogDescription>
+          </DialogHeader>
+          <label
+            htmlFor="category-name"
+            className="mt-2 text-sm font-semibold text-plum"
+          >
+            Category name
+          </label>
+          <Input
+            id="category-name"
+            value={categoryName}
+            onChange={(event) => setCategoryName(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') addCategory();
+            }}
+            maxLength={50}
+            placeholder="Rent, travel, subscriptions…"
+            autoFocus
+            className="h-11"
+          />
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setAddCategoryOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={addCategory}
+              disabled={!categoryName.trim()}
+              className="bg-plum"
+            >
+              Add category
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
         <DialogContent className="rounded-[22px] p-6 sm:max-w-md">
           <DialogHeader>

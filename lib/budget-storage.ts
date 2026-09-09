@@ -5,7 +5,9 @@ import type { PaycheckBudget, StoredBudgetData } from '@/types/budget';
 const STORAGE_KEY = 'pocket-plan:data';
 
 const categorySchema = z.object({
-  id: z.enum(['savings', 'credit-card', 'eating', 'shopping']),
+  id: z.string().min(1),
+  name: z.string().min(1).max(50).optional(),
+  color: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
   amountCents: z.number().int().nonnegative(),
   locked: z.boolean(),
 });
@@ -22,7 +24,7 @@ const budgetSchema = z.object({
     'one-time',
   ]),
   preset: z.enum(['balanced', 'debt-focused', 'savings-focused', 'custom']),
-  categories: z.array(categorySchema).length(4),
+  categories: z.array(categorySchema).min(1),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
