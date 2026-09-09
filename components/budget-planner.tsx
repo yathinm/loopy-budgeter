@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Image from 'next/image';
 import {
   Check,
   Copy,
@@ -630,12 +629,10 @@ export function BudgetPlanner() {
           href="#planner"
           className="flex items-center gap-2.5 font-semibold tracking-tight text-plum"
         >
-          <Image
-            src="/loopy-budgeter-logo.png"
-            alt=""
-            width="44"
-            height="44"
-            className="size-11 rounded-[15px] border border-plum/10 object-cover shadow-sm"
+          <span
+            aria-hidden="true"
+            className="size-11 rounded-[15px] border border-plum/10 bg-cover bg-center shadow-sm"
+            style={{ backgroundImage: "url('/loopy-budgeter-logo.png')" }}
           />
           <span className="text-lg">Loopy Budgeter</span>
         </a>
