@@ -14,7 +14,6 @@ import {
   RotateCcw,
   Save,
   ShoppingBag,
-  Sparkles,
   Trash2,
   Utensils,
   WalletCards,
@@ -682,9 +681,6 @@ export function BudgetPlanner() {
         className="mx-auto max-w-7xl px-5 pb-20 pt-7 sm:px-8 lg:px-10 lg:pt-12"
       >
         <div className="max-w-3xl">
-          <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-rose-soft px-3 py-1.5 text-sm font-semibold text-plum">
-            <Sparkles className="size-4" /> A fresh plan for this payday
-          </p>
           <h1 className="font-heading text-5xl font-semibold leading-[0.98] tracking-[-0.05em] text-plum sm:text-6xl">
             Make every paycheck count.
           </h1>
