@@ -802,9 +802,6 @@ export function BudgetPlanner() {
             >
               Create my budget
             </Button>
-            <p className="mt-4 text-center text-xs text-ink/45">
-              Planning suggestions only—not professional financial advice.
-            </p>
           </form>
           <div className="min-w-0 space-y-5">
             <section className="rounded-[30px] border border-white/80 bg-white/72 p-5 shadow-[0_24px_80px_rgba(85,20,47,0.1)] sm:p-7">
