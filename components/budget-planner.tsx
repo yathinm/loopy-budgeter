@@ -724,7 +724,7 @@ export function BudgetPlanner() {
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-8 text-ink/65">
             Split your take-home pay into a simple plan for saving, debt, food,
-            and a little PLAY.
+            and PLAY.
           </p>
         </div>
         <div className="mt-10 grid items-stretch gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-10">
