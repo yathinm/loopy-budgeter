@@ -156,9 +156,6 @@ function AllocationCard({
           {category.locked ? <Lock /> : <LockOpen />}
         </Button>
       </div>
-      <p className="mt-4 min-h-10 text-sm leading-5 text-ink/55">
-        {config.description}
-      </p>
       <div className="mt-5 grid grid-cols-2 gap-3">
         <label
           htmlFor={`${category.id}-amount`}
