@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Pocket Plan — Paycheck budgeting made simple',
+  title: 'Loopy Budgeter — Paycheck budgeting made simple',
   description: 'Create a clear plan for every paycheck in under a minute.',
+  icons: { icon: '/loopy-budgeter-logo.png' },
 };
 
 export default function RootLayout({
