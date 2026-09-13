@@ -30,7 +30,6 @@
     "dist/**",
     "coverage/**",
     "components/ui/**",
-    "hooks/use-mobile.ts",
     "next-env.d.ts"
   ],
   "rules": {
