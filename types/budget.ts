@@ -1,10 +1,8 @@
-export const categoryIds = [
-  'savings',
-  'credit-card',
-  'eating',
-  'shopping',
-] as const;
-export type BuiltInCategoryId = (typeof categoryIds)[number];
+export type BuiltInCategoryId =
+  | 'savings'
+  | 'credit-card'
+  | 'eating'
+  | 'shopping';
 export type CategoryId = string;
 
 export type PayFrequency =

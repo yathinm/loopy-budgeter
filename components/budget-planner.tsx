@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import Image from 'next/image';
 import {
   Check,
   Copy,
@@ -106,7 +107,6 @@ function getCategoryConfig(category: BudgetCategory) {
     builtIn ?? {
       name: category.name ?? 'Custom category',
       shortName: category.name ?? 'Custom',
-      description: '',
       color: category.color ?? customColors[0],
     }
   );
@@ -835,9 +835,11 @@ export function BudgetPlanner() {
               </div>
             </fieldset>
             <div className="hidden flex-1 items-center justify-center py-10 lg:flex">
-              <img
+              <Image
                 src="/loopy-mascot.png"
                 alt="Loopy mascot"
+                width={288}
+                height={288}
                 className="w-full max-w-72 object-contain"
               />
             </div>
@@ -938,16 +940,16 @@ export function BudgetPlanner() {
               {remaining > 0 && (
                 <div className="mt-4 flex flex-wrap gap-2">
                   {budget.categories.map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => allocateRemaining(item.id)}
-                        className="rounded-full bg-white/15 px-3 py-2 text-sm font-semibold"
-                      >
-                        <Plus className="mr-1 inline size-3.5" />
-                        {getCategoryConfig(item).shortName}
-                      </button>
-                    ))}
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => allocateRemaining(item.id)}
+                      className="rounded-full bg-white/15 px-3 py-2 text-sm font-semibold"
+                    >
+                      <Plus className="mr-1 inline size-3.5" />
+                      {getCategoryConfig(item).shortName}
+                    </button>
+                  ))}
                 </div>
               )}
             </section>
@@ -1047,14 +1049,10 @@ export function BudgetPlanner() {
             }}
             maxLength={50}
             placeholder="Rent, travel, subscriptions…"
-            autoFocus
             className="h-11"
           />
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setAddCategoryOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setAddCategoryOpen(false)}>
               Cancel
             </Button>
             <Button

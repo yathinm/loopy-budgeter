@@ -5,39 +5,34 @@ import type {
   PaycheckBudget,
 } from '@/types/budget';
 
-export const BASIS_POINTS_TOTAL = 10_000;
+const BASIS_POINTS_TOTAL = 10_000;
 
 export const categoryConfig: Record<
   BuiltInCategoryId,
   {
     name: string;
     shortName: string;
-    description: string;
     color: string;
   }
 > = {
   savings: {
     name: 'Savings',
     shortName: 'Savings',
-    description: 'Build your cushion or move a future goal closer.',
     color: '#c97882',
   },
   'credit-card': {
     name: 'Credit card payment',
     shortName: 'Credit card',
-    description: 'Bring down your balance and make debt feel lighter.',
     color: '#55142f',
   },
   eating: {
     name: 'Eating',
     shortName: 'Eating',
-    description: 'Cover groceries, coffee, and meals out.',
     color: '#e89aa5',
   },
   shopping: {
     name: 'Shopping',
     shortName: 'Shopping',
-    description: 'Set aside guilt-free room for wants and extras.',
     color: '#d95f5f',
   },
 };

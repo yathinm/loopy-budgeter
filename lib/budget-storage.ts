@@ -7,7 +7,10 @@ const STORAGE_KEY = 'pocket-plan:data';
 const categorySchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1).max(50).optional(),
-  color: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9a-f]{6}$/i)
+    .optional(),
   amountCents: z.number().int().nonnegative(),
   locked: z.boolean(),
 });
